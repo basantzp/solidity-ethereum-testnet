@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://seth-explorer.vercel.app/sitemap.xml

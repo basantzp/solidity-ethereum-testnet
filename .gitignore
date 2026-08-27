@@ -1,0 +1,10 @@
+node_modules/
+artifacts/
+cache/
+*.log
+.node.pid
+.server.pid
+.env
+coverage/
+typechain/
+typechain-types/

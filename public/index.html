@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Primary Meta Tags -->
+  <title>Solidity Ethereum Testnet (SETH) | On-Chain EVM Consensus & Explorer</title>
+  <meta name="title" content="Solidity Ethereum Testnet (SETH) | On-Chain EVM Consensus & Explorer">
+  <meta name="description" content="A 100% pure Solidity-native Ethereum testnet engine, virtual block simulator, state machine ledger, transaction pool, and real-time block explorer.">
+  <meta name="keywords" content="Ethereum, Solidity, Testnet, EVM, Smart Contracts, Blockchain, Hardhat, Web3, Block Explorer, SETH, Basant Pokhrel">
+  <meta name="author" content="Basant Pokhrel (basantzp)">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://seth-explorer.vercel.app/">
+
+  <!-- Open Graph / Facebook / Discord -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://seth-explorer.vercel.app/">
+  <meta property="og:title" content="Solidity Ethereum Testnet (SETH) | On-Chain EVM Consensus">
+  <meta property="og:description" content="Pure Solidity-native Ethereum Testnet state machine, virtual block engine, interactive faucet, and web block explorer.">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1200&h=630&q=80">
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://seth-explorer.vercel.app/">
+  <meta name="twitter:title" content="Solidity Ethereum Testnet (SETH)">
+  <meta name="twitter:description" content="Pure Solidity-native Ethereum Testnet state machine, virtual block engine, and web block explorer.">
+  <meta name="twitter:image" content="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1200&h=630&q=80">
+
+  <!-- Schema.org JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Solidity Ethereum Testnet (SETH)",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "All",
+    "offers": {
+      "@type": "Offer",
+      "price": "0.00",
+      "priceCurrency": "USD"
+    },
+    "description": "100% Solidity-Native Ethereum Testnet Engine, virtual block producer, ledger state machine, and real-time block explorer.",
+    "author": {
+      "@type": "Person",
+      "name": "Basant Pokhrel",
+      "url": "https://github.com/basantzp"
+    }
+  }
+  </script>
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- HEADER & NAVIGATION -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">⚡</div>
+        <div class="brand-info">
+          <h1>Solidity Ethereum Testnet</h1>
+          <span class="badge live-badge"><span class="pulse-dot"></span> SETH Virtual Chain</span>
+        </div>
+      </div>
+      <nav class="header-nav" aria-label="Main Navigation">
+        <a href="#stats" class="nav-link active">Overview</a>
+        <a href="#blocks" class="nav-link">Blocks</a>
+        <a href="#accounts" class="nav-link">Accounts</a>
+        <a href="#faucet" class="nav-link">Faucet</a>
+        <a href="#actions" class="nav-link">Actions</a>
+        <a href="https://github.com/basantzp/solidity-ethereum-testnet" target="_blank" rel="noopener noreferrer" class="btn btn-github" aria-label="View Source Code on GitHub">
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- HERO / STATUS SECTION -->
+    <section id="stats" class="stats-section" aria-labelledby="stats-heading">
+      <div class="section-header">
+        <h2 id="stats-heading">Live Network Metrics</h2>
+        <button id="refresh-btn" class="btn btn-sm btn-outline" aria-label="Refresh Network Data">
+          🔄 Refresh Chain
+        </button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-details">
+            <span class="stat-label">Block Height</span>
+            <span id="stat-block-height" class="stat-value">#0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">💸</div>
+          <div class="stat-details">
+            <span class="stat-label">Total Transactions</span>
+            <span id="stat-total-tx" class="stat-value">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">📜</div>
+          <div class="stat-details">
+            <span class="stat-label">Contracts Deployed</span>
+            <span id="stat-contracts" class="stat-value">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">🪙</div>
+          <div class="stat-details">
+            <span class="stat-label">Total Network Supply</span>
+            <span id="stat-supply" class="stat-value">0 SETH</span>
+          </div>
+        </div>
+
+        <div class="stat-card full-width">
+          <div class="stat-icon">⛓️</div>
+          <div class="stat-details">
+            <span class="stat-label">Core Testnet Contract Address</span>
+            <span id="stat-contract-addr" class="stat-value mono">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TWO-COLUMN DASHBOARD (EXPLORER & INTERACTION) -->
+    <div class="dashboard-split">
+      
+      <!-- LEFT COLUMN: RECENT BLOCKS & ACCOUNTS -->
+      <div class="col-left">
+        <!-- BLOCKS SECTION -->
+        <section id="blocks" class="content-card" aria-labelledby="blocks-heading">
+          <div class="card-header">
+            <h2 id="blocks-heading">📦 Recent Verified Blocks</h2>
+            <span class="badge" id="block-count-badge">0 Blocks</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" aria-label="Verified Testnet Blocks Table">
+              <thead>
+                <tr>
+                  <th scope="col">Block</th>
+                  <th scope="col">Block Hash</th>
+                  <th scope="col">Miner</th>
+                  <th scope="col">Txs</th>
+                  <th scope="col">Gas</th>
+                </tr>
+              </thead>
+              <tbody id="blocks-table-body">
+                <tr><td colspan="5" class="text-center py-4">Loading verified blocks...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ACCOUNTS SECTION -->
+        <section id="accounts" class="content-card mt-6" aria-labelledby="accounts-heading">
+          <div class="card-header">
+            <h2 id="accounts-heading">👥 Registered State Accounts</h2>
+            <span class="badge" id="account-count-badge">0 Accounts</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" aria-label="Registered Accounts Table">
+              <thead>
+                <tr>
+                  <th scope="col">Type</th>
+                  <th scope="col">Address</th>
+                  <th scope="col">Balance</th>
+                  <th scope="col">Nonce</th>
+                </tr>
+              </thead>
+              <tbody id="accounts-table-body">
+                <tr><td colspan="4" class="text-center py-4">Loading accounts...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- RIGHT COLUMN: FAUCET & TESTNET ACTIONS -->
+      <div class="col-right">
+        <!-- FAUCET CARD -->
+        <section id="faucet" class="content-card action-card" aria-labelledby="faucet-heading">
+          <div class="card-header">
+            <h2 id="faucet-heading">💧 Testnet Faucet Dispenser</h2>
+            <span class="badge badge-accent">5.0 SETH Drip</span>
+          </div>
+          <p class="card-desc">Request instant virtual testnet ether (SETH) to any Ethereum address for testing.</p>
+          <form id="faucet-form" class="action-form">
+            <div class="form-group">
+              <label for="faucet-address">Recipient Address (0x...):</label>
+              <input type="text" id="faucet-address" placeholder="0x70997970C51812dc3A010C7d01b50e0d17dc79C8" required>
+            </div>
+            <button type="submit" class="btn btn-primary full-width" aria-label="Request 5 SETH From Faucet">
+              💧 Dispense 5 SETH
+            </button>
+          </form>
+          <div id="faucet-msg" class="msg-box" style="display:none;"></div>
+        </section>
+
+        <!-- TRANSFER TRANSACTION CARD -->
+        <section id="actions" class="content-card action-card mt-6" aria-labelledby="transfer-heading">
+          <div class="card-header">
+            <h2 id="transfer-heading">💸 Virtual Transaction Builder</h2>
+          </div>
+          <p class="card-desc">Submit a state transition transaction on the Solidity Ethereum Testnet.</p>
+          <form id="transfer-form" class="action-form">
+            <div class="form-group">
+              <label for="transfer-signer">Sender Account:</label>
+              <select id="transfer-signer">
+                <option value="0">Signer #0 (Deployer / Admin)</option>
+                <option value="1" selected>Signer #1 (Alice)</option>
+                <option value="2">Signer #2 (Bob)</option>
+                <option value="3">Signer #3 (Miner)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="transfer-to">Recipient (To):</label>
+              <input type="text" id="transfer-to" placeholder="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC" required>
+            </div>
+            <div class="form-group">
+              <label for="transfer-amount">Amount (SETH):</label>
+              <input type="number" id="transfer-amount" step="0.1" min="0.1" value="1.0" required>
+            </div>
+            <button type="submit" class="btn btn-success full-width" aria-label="Submit Virtual Transaction">
+              🚀 Submit Transaction
+            </button>
+          </form>
+          <div id="transfer-msg" class="msg-box" style="display:none;"></div>
+        </section>
+
+        <!-- MINE BLOCK CARD -->
+        <section class="content-card action-card mt-6" aria-labelledby="mine-heading">
+          <div class="card-header">
+            <h2 id="mine-heading">⛏️ On-Chain Block Miner</h2>
+            <span class="badge">+2 SETH Reward</span>
+          </div>
+          <p class="card-desc">Trigger on-chain consensus to package pending transactions and mint the next block.</p>
+          <form id="mine-form" class="action-form">
+            <div class="form-group">
+              <label for="mine-tag">Vanity Tag / Extra Data:</label>
+              <input type="text" id="mine-tag" value="SolidityValidator2026" maxlength="32">
+            </div>
+            <button type="submit" class="btn btn-warning full-width" aria-label="Mine Next Block">
+              ⛏️ Mine Next Block
+            </button>
+          </form>
+          <div id="mine-msg" class="msg-box" style="display:none;"></div>
+        </section>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>⚡ <strong>Solidity Ethereum Testnet (SETH)</strong> — Built with Pure Solidity, Hardhat & Ethers.js by <a href="https://github.com/basantzp" target="_blank" rel="noopener noreferrer">Basant Pokhrel</a>.</p>
+      <p class="footer-sub">Open Source under MIT License • Proof-of-Authority Consensus & Virtual State Machine.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
