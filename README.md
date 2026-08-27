@@ -8,6 +8,7 @@
 [![Hardhat](https://img.shields.io/badge/Hardhat-2.22-FFF100?style=for-the-badge&logo=hardhat&logoColor=black)](https://hardhat.org/)
 [![Ethers.js v6](https://img.shields.io/badge/Ethers.js-v6.11-2656C7?style=for-the-badge&logoColor=white)](https://docs.ethers.org/)
 [![Express API](https://img.shields.io/badge/Express-API_Server-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbasantzp%2Fsolidity-ethereum-testnet)
 
 <p align="center">
   <b>A complete, self-contained Ethereum virtual network where the blockchain ledger, account balances, transaction pipeline, Genesis state, virtual contract deployments, miner block rewards, and Proof-of-Authority (PoA) consensus are implemented entirely in Solidity smart contracts.</b>
