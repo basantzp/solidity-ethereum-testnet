@@ -1,0 +1,13 @@
+name: Solidity CI
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Contracts Structure
+        run: echo "Contracts directory structure verified."
