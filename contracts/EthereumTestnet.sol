@@ -226,7 +226,7 @@ contract EthereumTestnet {
         } else {
             uint256 gasDelta = TARGET_GAS_LIMIT - parentGasUsed;
             uint256 feeDelta = (parentBaseFee * gasDelta) / TARGET_GAS_LIMIT / BASE_FEE_MAX_CHANGE_DENOMINATOR;
-            if (parentBaseFee > feeDelta + MIN_BASE_FEE) {
+            if (parentBaseFee >= feeDelta + MIN_BASE_FEE) {
                 nextBaseFee = parentBaseFee - feeDelta;
             } else {
                 nextBaseFee = MIN_BASE_FEE;
@@ -238,7 +238,7 @@ contract EthereumTestnet {
     // TRANSACTION PIPELINE
     // ==========================================
     /**
-     * @notice Submits a legacy transaction paying a static gasPrice.
+     * @notice Submits a legacy transaction paying a static gasPrice equal to current baseFee.
      */
     function sendTransaction(
         address to,
@@ -246,6 +246,23 @@ contract EthereumTestnet {
         bytes calldata data
     ) public nonReentrant returns (bytes32 txHash) {
         return _executeTransaction(to, value, data, baseFeePerGas, 0, TxType.LEGACY);
+    }
+
+    /**
+     * @notice Submits a legacy transaction paying a custom gasPrice >= baseFeePerGas.
+     * @param to Destination address or zero address for contract deployment
+     * @param value Amount of virtual SETH wei to send
+     * @param data Contract call payload or deployment bytecode
+     * @param gasPrice Static gas price offered by sender
+     */
+    function sendTransaction(
+        address to,
+        uint256 value,
+        bytes calldata data,
+        uint256 gasPrice
+    ) public nonReentrant returns (bytes32 txHash) {
+        require(gasPrice >= baseFeePerGas, "EthereumTestnet: gasPrice lower than current baseFee");
+        return _executeTransaction(to, value, data, gasPrice, 0, TxType.LEGACY);
     }
 
     /**
@@ -497,13 +514,38 @@ contract EthereumTestnet {
         }
     }
 
+    /**
+     * @notice Computes deterministic Ethereum contract address per RLP specification:
+     *         keccak256(rlp.encode([deployer, nonce]))[12:]
+     * @param deployer Address of account deploying contract
+     * @param nonce Transaction count of deployer account
+     */
+    function computeContractAddress(address deployer, uint256 nonce) public pure returns (address) {
+        bytes memory data;
+        if (nonce == 0) {
+            // RLP integer 0 is encoded as empty byte string 0x80 (list len 22 -> 0xd6)
+            data = abi.encodePacked(bytes1(0xd6), bytes1(0x94), deployer, bytes1(0x80));
+        } else if (nonce <= 0x7f) {
+            // Single byte value < 0x80 (list len 22 -> 0xd6)
+            data = abi.encodePacked(bytes1(0xd6), bytes1(0x94), deployer, bytes1(uint8(nonce)));
+        } else if (nonce <= 0xff) {
+            // 1-byte value >= 0x80 (RLP string prefix 0x81, list len 23 -> 0xd7)
+            data = abi.encodePacked(bytes1(0xd7), bytes1(0x94), deployer, bytes1(0x81), bytes1(uint8(nonce)));
+        } else if (nonce <= 0xffff) {
+            // 2-byte value (RLP string prefix 0x82, list len 24 -> 0xd8)
+            data = abi.encodePacked(bytes1(0xd8), bytes1(0x94), deployer, bytes1(0x82), bytes2(uint16(nonce)));
+        } else if (nonce <= 0xffffff) {
+            // 3-byte value (RLP string prefix 0x83, list len 25 -> 0xd9)
+            data = abi.encodePacked(bytes1(0xd9), bytes1(0x94), deployer, bytes1(0x83), bytes3(uint24(nonce)));
+        } else {
+            // 4-byte value (RLP string prefix 0x84, list len 26 -> 0xda)
+            data = abi.encodePacked(bytes1(0xda), bytes1(0x94), deployer, bytes1(0x84), bytes4(uint32(nonce)));
+        }
+        return address(uint160(uint256(keccak256(data))));
+    }
+
     function _computeContractAddress(address deployer, uint256 nonce) internal pure returns (address) {
-        return address(uint160(uint256(keccak256(abi.encodePacked(
-            bytes1(0xd6),
-            bytes1(0x94),
-            deployer,
-            bytes1(uint8(nonce))
-        )))));
+        return computeContractAddress(deployer, nonce);
     }
 
     // ==========================================
@@ -564,4 +606,35 @@ contract EthereumTestnet {
     function getAccountTransactions(address account) external view returns (bytes32[] memory) {
         return accountTransactionHashes[account];
     }
+
+    // ==========================================
+    // VALIDATOR & ADMIN GOVERNANCE
+    // ==========================================
+    function setValidator(address validator, bool active) external onlyAdmin {
+        require(validator != address(0), "EthereumTestnet: Invalid validator");
+        isValidator[validator] = active;
+        if (active) {
+            bool exists = false;
+            for (uint256 i = 0; i < validatorList.length; i++) {
+                if (validatorList[i] == validator) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                validatorList.push(validator);
+            }
+        }
+        emit ValidatorUpdated(validator, active);
+    }
+
+    function transferAdmin(address newAdmin) external onlyAdmin {
+        require(newAdmin != address(0), "EthereumTestnet: Invalid admin");
+        admin = newAdmin;
+    }
+
+    function getValidators() external view returns (address[] memory) {
+        return validatorList;
+    }
 }
+
