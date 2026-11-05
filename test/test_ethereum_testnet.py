@@ -81,6 +81,11 @@ class TestEthereumTestnetV2(unittest.TestCase):
         # Fund Alice
         self.tester.send_tx(self.contract.functions.requestFaucetFunds(self.tester.alice), sender=self.tester.alice)
 
+        # Expected contract address for Alice's first transaction (nonce = 0 in SETH ledger)
+        expected_contract_addr = self.tester.call_view(
+            self.contract.functions.computeContractAddress(self.tester.alice, 0)
+        )
+
         # Deploy dummy contract bytecode to zero address
         dummy_code = bytes.fromhex("6080604052348015600f57600080fd5b50603f80601d6000396000f3fe")
         zero_addr = "0x0000000000000000000000000000000000000000"
@@ -89,6 +94,15 @@ class TestEthereumTestnetV2(unittest.TestCase):
 
         summary = self.tester.call_view(self.contract.functions.getChainSummary())
         self.assertEqual(summary[4], 1) # totalContractsDeployed
+
+        # Verify deployed contract account state
+        acc = self.tester.call_view(self.contract.functions.getAccount(expected_contract_addr))
+        self.assertTrue(acc[2], "Account must be flagged as contract")
+        from Crypto.Hash import keccak
+        k = keccak.new(digest_bits=256)
+        k.update(dummy_code)
+        self.assertEqual(acc[3], k.digest(), "Contract codeHash must match bytecode keccak256")
+
 
     def test_05_eip1559_transaction_and_burning(self):
         # Fund Alice
@@ -207,5 +221,71 @@ class TestEthereumTestnetV2(unittest.TestCase):
         self.assertEqual(len(slot), 66)
         self.assertTrue(slot.endswith("00"), "ERC-7201 slot must clear lowest byte")
 
+    def test_10_rlp_contract_address_derivation(self):
+        # Ethereum RLP Address derivation test vectors
+        # Test Vector 1:
+        sender1 = "0x6ac7Af3Fe5Ba5f005b57d3297B65F3fDCed2bdAC"
+        addr_0 = self.tester.call_view(self.contract.functions.computeContractAddress(sender1, 0))
+        addr_1 = self.tester.call_view(self.contract.functions.computeContractAddress(sender1, 1))
+        addr_128 = self.tester.call_view(self.contract.functions.computeContractAddress(sender1, 128))
+
+        self.assertEqual(addr_0.lower(), "0xba09be80ef8527f37cafb9e475efd964e0e8a8f3")
+        self.assertEqual(addr_1.lower(), "0x9ca66a586bdeb3b662514add564444e2ac18f2e6")
+        self.assertEqual(addr_128.lower(), "0xe888a2839fe5813079a2beb89926360985ddc3d2")
+
+        # Test Vector 2:
+        sender2 = "0x1111111111111111111111111111111111111111"
+        addr2_0 = self.tester.call_view(self.contract.functions.computeContractAddress(sender2, 0))
+        addr2_1 = self.tester.call_view(self.contract.functions.computeContractAddress(sender2, 1))
+
+        self.assertEqual(addr2_0.lower(), "0x8f7a45ebde059392e46a46dcc14ab24681a961ea")
+        self.assertEqual(addr2_1.lower(), "0x15452ec016c4dc8c549e7fe6ff4b26324ea8b7a4")
+
+    def test_11_validator_governance(self):
+        # Non-admin cannot set validator
+        reverted = self.tester.expect_revert(
+            self.contract.functions.setValidator(self.tester.bob, True),
+            sender=self.tester.alice,
+            expected_substring="Only Admin allowed"
+        )
+        self.assertTrue(reverted)
+
+        # Admin sets Bob as validator
+        tx = self.tester.send_tx(self.contract.functions.setValidator(self.tester.bob, True), sender=self.tester.deployer)
+        self.assertEqual(tx["status"], 1)
+
+        is_val = self.tester.call_view(self.contract.functions.isValidator(self.tester.bob))
+        self.assertTrue(is_val)
+
+        vals = self.tester.call_view(self.contract.functions.getValidators())
+        self.assertIn(self.tester.bob, vals)
+
+        # Admin transfers governance to Bob
+        tx2 = self.tester.send_tx(self.contract.functions.transferAdmin(self.tester.bob), sender=self.tester.deployer)
+        self.assertEqual(tx2["status"], 1)
+        new_admin = self.tester.call_view(self.contract.functions.admin())
+        self.assertEqual(new_admin, self.tester.bob)
+
+    def test_12_legacy_transaction_custom_gas_price(self):
+        # Fund Alice
+        self.tester.send_tx(self.contract.functions.requestFaucetFunds(self.tester.alice), sender=self.tester.alice)
+
+        # Successful legacy transaction paying 2 gwei (> 1 gwei baseFee)
+        custom_gas_price = 2 * 10**9 # 2 gwei
+        tx = self.tester.send_tx(
+            self.contract.functions.sendTransaction(self.tester.bob, 10**18, b"", custom_gas_price),
+            sender=self.tester.alice
+        )
+        self.assertEqual(tx["status"], 1)
+
+        # Underpriced legacy transaction (< 1 gwei baseFee) must revert
+        reverted = self.tester.expect_revert(
+            self.contract.functions.sendTransaction(self.tester.bob, 10**18, b"", 500_000_000),
+            sender=self.tester.alice,
+            expected_substring="gasPrice lower than current baseFee"
+        )
+        self.assertTrue(reverted)
+
 if __name__ == "__main__":
     unittest.main()
+
